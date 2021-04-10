@@ -20,11 +20,13 @@ if (request.getParameter("login") != null) {
 <input type="email" name="email" required>
 <label for="password">Password:</label>
 <input type="password" name="password" required>
-<label for="cookies">Can we save cookies?</label>
-<label for="yes">Yes</label>
-<input type="radio" name="cookies" value="yes" id="yes">
-<label for="no">No</label>
-<input type="radio" name="cookies" value="no" id="no" >
+<%
+if (request.getCookies().length <= 1) {
+%>
+<jsp:include page="cookieQuestion.jsp"/>
+<%
+}
+%>
 <input type="submit" value="Log in">
 </form>
 

@@ -41,29 +41,48 @@ public class LoginController extends HttpServlet {
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
 	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		UserBean userBean = new UserBean(
-				request.getParameter("email"), 
-				request.getParameter("password") );
-
-		if (validateLogin(userBean)) {			
-			HttpSession session = request.getSession();
-			session.setMaxInactiveInterval(600);
-			session.setAttribute("userBean", userBean);
-			request.setAttribute("userBean", userBean);
-			
-			//nåt med cookies här som jag inte kommer på nu:
-			// kolla om det redan finns en cookie
-			// om det inte finns  - kolla om svaret för consent är ja
-			// isåfall sätt en ny cookie
-			
-			RequestDispatcher rd = request.getRequestDispatcher("feed.jsp");
-			rd.forward(request, response);
+		UserBean userBean = new UserBean(request.getParameter("email"), request.getParameter("password") );
+		// det är nåt fel som gör att man kommer in oavsett vad man skriver för inlogg, började fela när jag skapade feed.jsp filen.
+		if (!hasCorrectLogin(userBean)) {			
+			setBeanAsAttribute(request, userBean);
+			if (hasAsweredCookieQuestion(request)) {
+				if (isConsentingToCookies(request)) {
+					setThemeCookie(response);
+				}
+			}
+			forwardToFeed(request,response);
 		} else {
 			response.sendRedirect("index.jsp?login=fail");
 		}			
 	}
+	
+	private void forwardToFeed(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
+		RequestDispatcher rd = request.getRequestDispatcher("feed.jsp");
+		rd.forward(request, response);
+	}
+	
+	private void setBeanAsAttribute(HttpServletRequest request, UserBean userBean) {
+		HttpSession session = request.getSession();
+		session.setMaxInactiveInterval(600);
+		session.setAttribute("userBean", userBean);
+		request.setAttribute("userBean", userBean);
+	}
+	
+	private void setThemeCookie(HttpServletResponse response) {
+		Cookie cookie = new Cookie("Theme", "Light");
+		cookie.setMaxAge(600);
+		response.addCookie(cookie);
+	}
+	
+	private boolean isConsentingToCookies(HttpServletRequest request) {
+		return (request.getParameter("cookies")).equals("yes") ? true : false;
+	}
 		
-	private boolean validateLogin(UserBean userBean) {
+	private boolean hasAsweredCookieQuestion(HttpServletRequest request) {
+		return request.getParameter("cookies") != null ? true : false;
+	}
+	
+	private boolean hasCorrectLogin(UserBean userBean) {
 		if (DatabaseConnector.openConnection("users")) {
 			return DatabaseConnector.makeLoginQuery(userBean);
 		}
