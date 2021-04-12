@@ -27,14 +27,13 @@ public class LoginController extends HttpServlet {
      */
     public LoginController() {
         super();
-        // TODO Auto-generated constructor stub
     }
 
 	/**
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
 	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		doPost(request,response);
+		response.sendRedirect("index.jsp");
 	}
 
 	/**
@@ -42,12 +41,15 @@ public class LoginController extends HttpServlet {
 	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		UserBean userBean = new UserBean(request.getParameter("email"), request.getParameter("password") );
-		// det är nåt fel som gör att man kommer in oavsett vad man skriver för inlogg, började fela när jag skapade feed.jsp filen.
-		if (!hasCorrectLogin(userBean)) {			
+		if (hasCorrectLogin(userBean)) {			
 			setBeanAsAttribute(request, userBean);
 			if (hasAsweredCookieQuestion(request)) {
 				if (isConsentingToCookies(request)) {
+					setConsentCookie(response, "yes");
 					setThemeCookie(response);
+				}
+				else {
+					setConsentCookie(response, "no");
 				}
 			}
 			forwardToFeed(request,response);
@@ -68,8 +70,14 @@ public class LoginController extends HttpServlet {
 		request.setAttribute("userBean", userBean);
 	}
 	
+	private void setConsentCookie(HttpServletResponse response, String value) {
+		Cookie cookie = new Cookie("wantsCookies", value);
+		cookie.setMaxAge(1000);
+		response.addCookie(cookie);
+	}
+	
 	private void setThemeCookie(HttpServletResponse response) {
-		Cookie cookie = new Cookie("Theme", "Light");
+		Cookie cookie = new Cookie("theme", "light");
 		cookie.setMaxAge(600);
 		response.addCookie(cookie);
 	}
