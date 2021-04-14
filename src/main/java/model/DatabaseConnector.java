@@ -35,71 +35,91 @@ public class DatabaseConnector {
 			return false;		}
 	}
 	
-	private static String checkIfTagExists(String tag) {
-		String tagId = null;
+	private static void checkIfTagExists(PostBean postBean) {		
 		try {
-			String requestQuery = "SELECT Tag_ID FROM tag WHERE tagname = ?";
+			String requestQuery = "SELECT COUNT(Tag_ID) FROM tag WHERE tagname = ?";
 			stmt = conn.prepareStatement(requestQuery);
-			stmt.setString(1, tag);
+			stmt.setString(1, postBean.getTagName());
+			
 			stmt.executeQuery();
 			resultSet = stmt.executeQuery();
-
-			while(resultSet.next()) {
-				tagId = String.valueOf(resultSet.getInt(1));
+			
+			if (resultSet.next()) {
+				if (resultSet.getInt(1) == 1) {
+					postBean.setIsInDatabase(true);
+				}
 			}
 
 			closeConnection();
 		} catch (SQLException e) {
-			System.out.println("Från check if tag exists");
+			System.out.println("Från catch i check if tag exists");
 			handleSqlError(e);
 		}
-		return tagId;
 	}
 	
-	private static void addTagToDatabase(PostBean postBean) { /
-		String tagId = checkIfTagExists(postBean.getTag());
-
-		if (tagId == null) {
-			try {
-				String requestQuery = "INSERT INTO `tag` (`Tagname`) VALUES (?)";
-				stmt = conn.prepareStatement(requestQuery);
-				stmt.setString(1, postBean.getTag());
-				stmt.executeUpdate();
-				
-				requestQuery =  "SELECT DISTINCT `Tag_ID` FROM `tag` WHERE `Tagname` = ?";
-				stmt = conn.prepareStatement(requestQuery);
-				stmt.setString(1, postBean.getTag());
-
-				resultSet = stmt.executeQuery();
-				
-				while (resultSet.next()) {
-					System.out.println("från while i add tag to database: " + String.valueOf(resultSet.getInt(1)));
-					tagId = String.valueOf(resultSet.getInt(1)); /// HUR SKA JAG SPARA DETTA VÄRDET NÅNSTANS?
-				}
-				closeConnection(); // KAN INTE RETURNERA NÅGOT EFTER DENNA???? 
-			} catch (SQLException e) {
-				System.out.println("Från catch i add tag to database");
-				handleSqlError(e);
-			}
-			
-		} 
-	}
-	
-	public static void addPostToDatabase(PostBean postBean) {
+	private static void getTagIdFromDatabase(PostBean postBean) {
 		try {
-			String requestQuery = "INSERT INTO `post` (`Text`, `Tag_ID`) VALUES (?, ?)";
+			//HÄMTAR ID FRÅN DEN TAG SOM FINNS I POSTBEAN
+			String requestQuery =  "SELECT DISTINCT `Tag_ID` FROM `tag` WHERE `Tagname` = ?";
 			stmt = conn.prepareStatement(requestQuery);
-			stmt.setString(1, postBean.getText());
-			stmt.setString(2, tagId); // HUR FAN SKA JAG FÅ TAG I TAG ID HÄR????
-
+			stmt.setString(1, postBean.getTagName());
+			resultSet = stmt.executeQuery();
+			while (resultSet.next()) {
+				postBean.setTagId(String.valueOf(resultSet.getInt(1))); 
+			}
+			closeConnection();
+		} catch (SQLException e) {
+			System.out.println("Från catch i add tag to database");
+			handleSqlError(e);
+		}
+	}
+	
+	private static void addTagToDatabase(PostBean postBean) {
+		try {
+			// LÄGG TILL EN RAD I TAG MED DET TAGNAME SOM FINNS I POSTBEAN
+			String requestQuery = "INSERT INTO `tag` (`Tagname`) VALUES (?)";
+			stmt = conn.prepareStatement(requestQuery);
+			stmt.setString(1, postBean.getTagName());
 			stmt.executeUpdate();
 			
 			closeConnection();
-			
 		} catch (SQLException e) {
-			System.out.println("Från catch i add post to database");
+			System.out.println("Från catch i add tag to database");
 			handleSqlError(e);
 		}
+	}
+	
+	public static void addPostToDatabase(PostBean postBean) {
+		checkIfTagExists(postBean); 
+		
+		if(openConnection("posts")) {
+			if (!postBean.isInDatabase()) {
+				if (openConnection("posts")) {
+					addTagToDatabase(postBean);
+				} 
+			}
+		} 
+		
+		if (openConnection("posts")) {
+			getTagIdFromDatabase(postBean);
+		}
+		
+		if (openConnection("posts")) {
+			try {
+				String requestQuery = "INSERT INTO `post` (`Text`, `Tag_ID`) VALUES (?, ?)";
+				stmt = conn.prepareStatement(requestQuery);
+				stmt.setString(1, postBean.getText());
+				stmt.setString(2, postBean.getTagId());
+
+				stmt.executeUpdate();
+				closeConnection();
+				
+			} catch (SQLException e) {
+				System.out.println("Från catch i add post to database");
+				handleSqlError(e);
+			}
+		}
+		
 	}
 	
 	public static List<PostBean> makePostQuery(){
@@ -159,5 +179,84 @@ public class DatabaseConnector {
 	private static void closeConnection() throws SQLException {
 		conn.endRequest();
 		conn.close();
+	}
+
+	public static ArrayList<PostBean> makeSearchQuery(SearchBean searchBean) {
+		ArrayList<PostBean> searchResults = new ArrayList<>();
+		try {
+			//Finns sökfrasen bland text
+			if (openConnection("posts")) {
+				if (isSearchPhraseInDatabase(searchBean, "text")) {
+					if (openConnection("posts")) {
+						searchResults.addAll(getPostsWithSearchPhrase(searchBean, "text"));
+					}
+				}
+			}
+			
+			//Finns sökfrasen bland taggar
+			if (openConnection("posts")) {
+				if (isSearchPhraseInDatabase(searchBean, "tagname")) {
+					if (openConnection("posts")) {
+						searchResults.addAll(getPostsWithSearchPhrase(searchBean, "tagname")) ;
+					}
+				}
+			}
+
+			closeConnection();
+		} catch (SQLException e) {
+			System.out.println("Från catch i Make search query");
+			handleSqlError(e);
+		}
+		
+		return searchResults;
+	}
+	
+	private static ArrayList<PostBean> getPostsWithSearchPhrase(SearchBean searchBean, String column ){
+		ArrayList<PostBean> searchResults = new ArrayList<>();
+		try {
+			String requestQuery = 
+					"SELECT p.text, t.tagname FROM post p INNER JOIN tag t ON p.Tag_ID = t.Tag_ID WHERE ? LIKE ?";
+			stmt = conn.prepareStatement(requestQuery);
+			stmt.setString(1, column);
+			stmt.setString(2, "%" + searchBean.getSearch() + "%");			
+			
+			resultSet = stmt.executeQuery();
+			
+			while(resultSet.next()) {
+				searchResults.add(new PostBean(resultSet.getString(1), resultSet.getString(2)));
+			}
+
+			closeConnection();
+		} catch (SQLException e) {
+			System.out.println("Från catch i get posts with search phrase");
+			handleSqlError(e);
+		}
+		
+		return searchResults;
+	}
+	
+	private static boolean isSearchPhraseInDatabase(SearchBean searchBean, String column) {
+		boolean isInDatabase = false;
+		try {
+			String requestQuery = 
+					"SELECT COUNT(*) FROM post p INNER JOIN tag t ON p.Tag_ID = t.Tag_ID WHERE ? LIKE ?";
+			stmt = conn.prepareStatement(requestQuery);
+			stmt.setString(1, column);
+			stmt.setString(2, "%" + searchBean.getSearch() + "%");			
+			
+			resultSet = stmt.executeQuery();
+			
+			while(resultSet.next()) {
+				if (Integer.valueOf(resultSet.getString(1)) >= 1) {
+					isInDatabase = true;
+					}
+				}
+			closeConnection();
+			} catch (SQLException e) {
+				System.out.println("från is search phrase in database");
+				handleSqlError(e);
+			}
+		
+		return isInDatabase;
 	}
 }

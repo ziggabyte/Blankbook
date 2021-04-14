@@ -1,6 +1,6 @@
-<main class="main">
-<% 
-List<PostBean> postBeanList = null;
+<div class="feedContainer">
+<%
+ArrayList<PostBean> postBeanList = null;
 
 if (DatabaseConnector.openConnection("posts")) {
 	postBeanList = DatabaseConnector.makePostQuery();
@@ -8,14 +8,13 @@ if (DatabaseConnector.openConnection("posts")) {
 
 if (postBeanList != null){
 	for (PostBean pb : postBeanList) {
-		out.print("<div class='post'><p class='postText'>" 
+		out.print("<div class='card' style='width: 18rem;'><div class='card-body'><p class='card-text'>" 
 	+ pb.getText() 
-	+ "</p><p class='postTag'>#" 
-	+ pb.getTag() 
-	+ "</p></div>");
+	+ "</p><h6 class='card-subtitle mb-2 text-muted'>#" 
+	+ pb.getTagName() 
+	+ "</h6></div></div>");
 	}
 }
-
 %>
 
-</main>
+</div>

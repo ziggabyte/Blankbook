@@ -5,11 +5,14 @@ import java.util.List;
 public class PostBean {
 
 	private String text;
-	private String tag;
+	private String tagName;
+	private String tagId;
+	private boolean isInDatabase;
 	
-	public PostBean(String text, String tag) {
+	public PostBean(String text, String tagName) {
 		this.text = text;
-		this.tag = tag;
+		this.tagName = tagName;
+		this.isInDatabase = false;
 	}
 	
 	public String getText() {
@@ -18,10 +21,26 @@ public class PostBean {
 	public void setText(String text) {
 		this.text = text;
 	}
-	public String getTag() {
-		return tag;
+	public String getTagName() {
+		return tagName;
 	}
-	public void setTag(String tag) {
-		this.tag = tag;
+	public void setTagName(String tag) {
+		this.tagName = tag;
+	}
+
+	public String getTagId() {
+		return tagId;
+	}
+
+	public void setTagId(String tagId) {
+		this.tagId = tagId;
+	}
+
+	public boolean isInDatabase() {
+		return isInDatabase;
+	}
+
+	public void setIsInDatabase(boolean isInDatabase) {
+		this.isInDatabase = isInDatabase;
 	}
 }

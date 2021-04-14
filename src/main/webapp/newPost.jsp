@@ -1,19 +1,13 @@
-<%@ page language="java" contentType="text/html; charset=UTF-8"
-    pageEncoding="UTF-8"%>
-<%@ page import="model.UserBean" %>
-<% UserBean userBean = (UserBean) session.getAttribute("userBean"); %>
-<%
-if (session.getAttribute("userBean") == null) {
-	RequestDispatcher rd = request.getRequestDispatcher("LoginController");
-	rd.forward(request, response);
-}
-%>
-<!DOCTYPE html>
-<html>
-<%@ include file="head.jsp" %>
-<body>
-<%@ include file="newPostHeader.jsp" %>
-<%@ include file="newPostMain.jsp" %>
-<%@ include file="newPostFooter.jsp" %>
-</body>
-</html>
+<div class="newPostContainer">
+<form action="<%=request.getContextPath()%>/PostController" method="post">
+<div class="mb-3">
+<div class="mb-3">
+  <label for="exampleFormControlTextarea1" class="form-label">Post:</label>
+  <textarea class="form-control" id="exampleFormControlTextarea1" rows="3" name="text"></textarea>
+</div>
+  <label for="exampleFormControlInput1" class="form-label">Tag:</label>
+  <input type="text" class="form-control" id="exampleFormControlInput1" name="tag">
+</div>
+<button type="submit">Post to feed</button>
+</form>
+</div>

@@ -3,6 +3,7 @@
 <%@ page import="model.UserBean"  %>
 <%@ page import="model.PostBean" %>
 <%@ page import="java.util.List" %>
+<%@ page import="java.util.ArrayList" %>
 <%@ page import="model.DatabaseConnector" %>
 <% UserBean userBean = (UserBean) session.getAttribute("userBean"); %>
 <%
@@ -15,8 +16,11 @@ if (session.getAttribute("userBean") == null) {
 <html>
 <%@include file="head.jsp"%>
 <body>
-<%@include file="feedHeader.jsp"%>
+<%@include file="header.jsp"%>
+<main>
+<%@ include file="newPost.jsp" %>
 <%@include file="feedMain.jsp"%>
-<%@include file="feedFooter.jsp"%>
+</main>
+<%@include file="footer.jsp"%>
 </body>
 </html>
