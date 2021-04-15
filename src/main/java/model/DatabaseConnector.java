@@ -126,10 +126,7 @@ public class DatabaseConnector {
 		
 		try {
 			String requestQuery = 
-					"SELECT post.text, tag.tagname "
-					+ "FROM post "
-					+ "INNER JOIN tag "
-					+ "ON post.Tag_ID = tag.Tag_ID";
+					"SELECT post.text, tag.tagname FROM post INNER JOIN tag ON post.Tag_ID = tag.Tag_ID ORDER BY post.Post_ID DESC";
 			stmt = conn.prepareStatement(requestQuery);
 			resultSet = stmt.executeQuery();
 			
@@ -227,7 +224,7 @@ public class DatabaseConnector {
 		ArrayList<PostBean> searchResults = new ArrayList<>();
 		try {
 			String requestQuery = 
-					"SELECT post.text, tag.tagname, post.Post_ID FROM post INNER JOIN tag ON post.Tag_ID = tag.Tag_ID WHERE tag.Tagname LIKE ?";
+					"SELECT post.text, tag.tagname, post.Post_ID FROM post INNER JOIN tag ON post.Tag_ID = tag.Tag_ID WHERE tag.Tagname LIKE ? ORDER BY post.Post_ID DESC";
 			stmt = conn.prepareStatement(requestQuery);
 			stmt.setString(1, "%" + searchBean.getSearch() + "%");			
 			resultSet = stmt.executeQuery();
@@ -249,7 +246,7 @@ public class DatabaseConnector {
 		ArrayList<PostBean> searchResults = new ArrayList<>();
 		try {
 			String requestQuery = 
-					"SELECT post.text, tag.tagname, post.Post_ID FROM post INNER JOIN tag ON post.Tag_ID = tag.Tag_ID WHERE post.Text LIKE ?";
+					"SELECT post.text, tag.tagname, post.Post_ID FROM post INNER JOIN tag ON post.Tag_ID = tag.Tag_ID WHERE post.Text LIKE ? ORDER BY post.Post_ID DESC";
 			stmt = conn.prepareStatement(requestQuery);
 			stmt.setString(1, "%" + searchBean.getSearch() + "%");			
 			resultSet = stmt.executeQuery();
