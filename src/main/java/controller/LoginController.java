@@ -78,7 +78,7 @@ public class LoginController extends HttpServlet {
 	
 	private void setThemeCookie(HttpServletResponse response) {
 		Cookie cookie = new Cookie("theme", "light");
-		cookie.setMaxAge(600);
+		cookie.setMaxAge(1000);
 		response.addCookie(cookie);
 	}
 	

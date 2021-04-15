@@ -6,7 +6,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.List;
 
 public class DatabaseConnector {
 	
@@ -122,15 +121,15 @@ public class DatabaseConnector {
 		
 	}
 	
-	public static List<PostBean> makePostQuery(){
-		List<PostBean> postBeanList = new ArrayList<>();
+	public static ArrayList<PostBean> makePostQuery(){
+		ArrayList<PostBean> postBeanList = new ArrayList<>();
 		
 		try {
 			String requestQuery = 
-					"SELECT p.text, t.tagname "
-					+ "FROM post p "
-					+ "INNER JOIN tag t "
-					+ "ON p.Tag_ID = t.Tag_ID";
+					"SELECT post.text, tag.tagname "
+					+ "FROM post "
+					+ "INNER JOIN tag "
+					+ "ON post.Tag_ID = tag.Tag_ID";
 			stmt = conn.prepareStatement(requestQuery);
 			resultSet = stmt.executeQuery();
 			
@@ -184,23 +183,36 @@ public class DatabaseConnector {
 	public static ArrayList<PostBean> makeSearchQuery(SearchBean searchBean) {
 		ArrayList<PostBean> searchResults = new ArrayList<>();
 		try {
-			//Finns sökfrasen bland text
+			
+			//Finns sökfrasen bland taggar
 			if (openConnection("posts")) {
-				if (isSearchPhraseInDatabase(searchBean, "text")) {
+				if (isSearchPhraseInTag(searchBean)) {
 					if (openConnection("posts")) {
-						searchResults.addAll(getPostsWithSearchPhrase(searchBean, "text"));
+						searchResults.addAll(getPostsWithSearchPhraseInTag(searchBean)) ;
 					}
 				}
 			}
 			
-			//Finns sökfrasen bland taggar
+			//Finns sökfrasen bland text och kolla så inga dubletter läggs till
 			if (openConnection("posts")) {
-				if (isSearchPhraseInDatabase(searchBean, "tagname")) {
+				if (isSearchPhraseInPost(searchBean)) {
 					if (openConnection("posts")) {
-						searchResults.addAll(getPostsWithSearchPhrase(searchBean, "tagname")) ;
+						ArrayList<PostBean> checkForDuplicates = getPostsWithSearchPhraseInText(searchBean);
+						if (searchResults.size() > 0) {
+							for (int i = 0; i < searchResults.size(); i ++) {
+								for (int j = 0; j < checkForDuplicates.size(); j++) {
+									if (searchResults.get(i).getPostId().equals(checkForDuplicates.get(j).getPostId())) {
+										checkForDuplicates.remove(j);
+									}
+								}
+							}	
+						}
+						searchResults.addAll(checkForDuplicates);
 					}
 				}
 			}
+			
+			
 
 			closeConnection();
 		} catch (SQLException e) {
@@ -211,19 +223,17 @@ public class DatabaseConnector {
 		return searchResults;
 	}
 	
-	private static ArrayList<PostBean> getPostsWithSearchPhrase(SearchBean searchBean, String column ){
+	private static ArrayList<PostBean> getPostsWithSearchPhraseInTag(SearchBean searchBean){
 		ArrayList<PostBean> searchResults = new ArrayList<>();
 		try {
 			String requestQuery = 
-					"SELECT p.text, t.tagname FROM post p INNER JOIN tag t ON p.Tag_ID = t.Tag_ID WHERE ? LIKE ?";
+					"SELECT post.text, tag.tagname, post.Post_ID FROM post INNER JOIN tag ON post.Tag_ID = tag.Tag_ID WHERE tag.Tagname LIKE ?";
 			stmt = conn.prepareStatement(requestQuery);
-			stmt.setString(1, column);
-			stmt.setString(2, "%" + searchBean.getSearch() + "%");			
-			
+			stmt.setString(1, "%" + searchBean.getSearch() + "%");			
 			resultSet = stmt.executeQuery();
 			
 			while(resultSet.next()) {
-				searchResults.add(new PostBean(resultSet.getString(1), resultSet.getString(2)));
+				searchResults.add(new PostBean(resultSet.getString(1), resultSet.getString(2), String.valueOf(resultSet.getInt(3))));
 			}
 
 			closeConnection();
@@ -235,15 +245,35 @@ public class DatabaseConnector {
 		return searchResults;
 	}
 	
-	private static boolean isSearchPhraseInDatabase(SearchBean searchBean, String column) {
+	private static ArrayList<PostBean> getPostsWithSearchPhraseInText(SearchBean searchBean){
+		ArrayList<PostBean> searchResults = new ArrayList<>();
+		try {
+			String requestQuery = 
+					"SELECT post.text, tag.tagname, post.Post_ID FROM post INNER JOIN tag ON post.Tag_ID = tag.Tag_ID WHERE post.Text LIKE ?";
+			stmt = conn.prepareStatement(requestQuery);
+			stmt.setString(1, "%" + searchBean.getSearch() + "%");			
+			resultSet = stmt.executeQuery();
+			
+			while(resultSet.next()) {
+				searchResults.add(new PostBean(resultSet.getString(1), resultSet.getString(2), String.valueOf(resultSet.getInt(3))));
+			}
+
+			closeConnection();
+		} catch (SQLException e) {
+			System.out.println("Från catch i get posts with search phrase");
+			handleSqlError(e);
+		}
+		
+		return searchResults;
+	}
+	
+	private static boolean isSearchPhraseInPost(SearchBean searchBean) {
 		boolean isInDatabase = false;
 		try {
 			String requestQuery = 
-					"SELECT COUNT(*) FROM post p INNER JOIN tag t ON p.Tag_ID = t.Tag_ID WHERE ? LIKE ?";
+					"SELECT COUNT(*) FROM post INNER JOIN tag ON post.Tag_ID = tag.Tag_ID WHERE post.Text LIKE ?";
 			stmt = conn.prepareStatement(requestQuery);
-			stmt.setString(1, column);
-			stmt.setString(2, "%" + searchBean.getSearch() + "%");			
-			
+			stmt.setString(1, "%" + searchBean.getSearch() + "%");						
 			resultSet = stmt.executeQuery();
 			
 			while(resultSet.next()) {
@@ -253,10 +283,31 @@ public class DatabaseConnector {
 				}
 			closeConnection();
 			} catch (SQLException e) {
-				System.out.println("från is search phrase in database");
+				System.out.println("från catch i  is search phrase in database");
 				handleSqlError(e);
 			}
-		
+		return isInDatabase;
+	}
+	
+	private static boolean isSearchPhraseInTag(SearchBean searchBean) {
+		boolean isInDatabase = false;
+		try {
+			String requestQuery = 
+					"SELECT COUNT(*) FROM post INNER JOIN tag ON post.Tag_ID = tag.Tag_ID WHERE tag.Tagname LIKE ?";
+			stmt = conn.prepareStatement(requestQuery);
+			stmt.setString(1, "%" + searchBean.getSearch() + "%");			
+			resultSet = stmt.executeQuery();
+			
+			while(resultSet.next()) {
+				if (Integer.valueOf(resultSet.getString(1)) >= 1) {
+					isInDatabase = true;
+					}
+				}
+			closeConnection();
+			} catch (SQLException e) {
+				System.out.println("från catch i  is search phrase in database");
+				handleSqlError(e);
+			}
 		return isInDatabase;
 	}
 }

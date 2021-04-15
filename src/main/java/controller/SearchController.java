@@ -2,7 +2,6 @@ package controller;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.List;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
@@ -43,13 +42,13 @@ public class SearchController extends HttpServlet {
 		SearchBean searchBean = null;
 		
 		if (!request.getParameter("search").isBlank() && !request.getParameter("search").isEmpty()) {			
-			searchBean = new SearchBean(request.getParameter("search").trim().toLowerCase());	
+			searchBean = new SearchBean(request.getParameter("search"));	
 		}
 		
 		ArrayList<PostBean> searchResults = getSearchResults(searchBean);
 		request.setAttribute("searchResults", searchResults);
 		
-		RequestDispatcher rd = request.getRequestDispatcher("searchResults.jsp");
+		RequestDispatcher rd = request.getRequestDispatcher("feed.jsp");
 		rd.forward(request, response);
 	}
 	

@@ -32,3 +32,7 @@ footer {
 .loggedInAs {
 	color: white;
 }
+
+.searchResultsContainer {
+	border: 1px solid black;
+}

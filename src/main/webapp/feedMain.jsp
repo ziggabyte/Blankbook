@@ -1,4 +1,6 @@
 <div class="feedContainer">
+<h1>Feed</h1>
+
 <%
 ArrayList<PostBean> postBeanList = null;
 

@@ -1,17 +1,22 @@
 package model;
-
-import java.util.List;
-
 public class PostBean {
 
 	private String text;
 	private String tagName;
 	private String tagId;
+	private String postId;
 	private boolean isInDatabase;
 	
 	public PostBean(String text, String tagName) {
 		this.text = text;
 		this.tagName = tagName;
+		this.isInDatabase = false;
+	}
+	
+	public PostBean(String text, String tagName, String postId) {
+		this.text = text;
+		this.tagName = tagName;
+		this.postId = postId;
 		this.isInDatabase = false;
 	}
 	
@@ -42,5 +47,13 @@ public class PostBean {
 
 	public void setIsInDatabase(boolean isInDatabase) {
 		this.isInDatabase = isInDatabase;
+	}
+
+	public String getPostId() {
+		return postId;
+	}
+
+	public void setPostId(String postId) {
+		this.postId = postId;
 	}
 }
