@@ -9,19 +9,12 @@ if (DatabaseConnector.openConnection("posts")) {
 
 if (postBeanList != null){
 	for (PostBean pb : postBeanList) {
-		out.print(
-	"<div class='my-card'>" 
-	+ "<div class='card-body'>" 
-	+ "<p class='card-text'>" 
-	+ pb.getText() 
-	+ "</p>"
-	+ "<form action='SearchController' method='post'>" 
-	+ "<button type='submit' name='search' value='" + pb.getTagName() + "'>"
-	+ "#" + pb.getTagName()
-	+ "</button>" 
-	+ "</form>" 
-	+ "</div>" 
-	+ "</div>");
+		out.print("<div class='my-card'><div class='card-body'><p class='card-text'>" + pb.getText() + "</p>");
+	 if (!pb.getTagName().equals("")){
+		 out.print("<form action='SearchController' method='post'><button type='submit' name='search' value='" 
+	 	+ pb.getTagName() + "'>#" + pb.getTagName() + "</button></form>");
+	 }
+	out.print("</div></div>");
 	}
 }
 %>
