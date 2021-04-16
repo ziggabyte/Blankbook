@@ -1,43 +1,48 @@
 "use strict";
 
 //script för toggle dark mode
-const darkModeToggler = document.getElementById("toggle");
-const darkStyleLink = document.getElementById("darkStyle");
-const darkStylePath = "css/darkStyles.css";
 
-let wholeCookie = document.cookie;
-let splitCookies = wholeCookie.split(";");
-let hasThemeCookie = splitCookies.length > 1 ? true : false;
+if (document.getElementById("toggle")) {
+  const darkModeToggler = document.getElementById("toggle");
+  const darkStyleLink = document.getElementById("darkStyle");
+  const darkStylePath = "css/darkStyles.css";
 
-function setThemeCookie(value) {
-  document.cookie = "theme=" + value;
-}
+  let wholeCookie = document.cookie;
+  let splitCookies = wholeCookie.split(";");
+  let hasThemeCookie = splitCookies.length > 1 ? true : false;
 
-function turnOnDarkTheme() {
-  darkStyleLink.setAttribute("href", darkStylePath);
-  darkModeToggler.textContent = "Light mode";
-}
+  function setThemeCookie(value) {
+    document.cookie = "theme=" + value;
+  }
 
-function turnOffDarkTheme() {
-  darkStyleLink.setAttribute("href", " ");
-  darkModeToggler.textContent = "Dark mode";
-}
+  function turnOnDarkTheme() {
+    darkStyleLink.setAttribute("href", darkStylePath);
+    darkModeToggler.textContent = "Light mode";
+  }
 
-if (darkModeToggler) {
-  darkModeToggler.addEventListener("click", () => {
-    if (darkModeToggler.textContent === "Light mode") {
-      turnOffDarkTheme();
-      if (hasThemeCookie) setThemeCookie("light");
-    } else {
+  function turnOffDarkTheme() {
+    darkStyleLink.setAttribute("href", " ");
+    darkModeToggler.textContent = "Dark mode";
+  }
+
+  if (darkModeToggler) {
+    darkModeToggler.addEventListener("click", () => {
+      if (darkModeToggler.textContent === "Light mode") {
+        turnOffDarkTheme();
+        if (hasThemeCookie) setThemeCookie("light");
+      } else {
+        turnOnDarkTheme();
+        if (hasThemeCookie) setThemeCookie("dark");
+      }
+    });
+  }
+
+  if (hasThemeCookie) {
+    if (
+      splitCookies[1].substring(splitCookies[1].indexOf("=") + 1) === "dark"
+    ) {
       turnOnDarkTheme();
-      if (hasThemeCookie) setThemeCookie("dark");
     }
-  });
-}
-
-if (hasThemeCookie) {
-  if (splitCookies[1].substring(splitCookies[1].indexOf("=") + 1) === "dark") {
-    turnOnDarkTheme();
   }
 }
 
@@ -46,6 +51,7 @@ if (document.getElementById("searchResultsContainer")) {
   const searchResultsContainer = document.getElementById(
     "searchResultsContainer"
   );
+  searchResultsContainer.textContent = "";
   const closeButton = document.getElementById("closeSearchResultsButton");
   closeButton.addEventListener("click", () => {
     document.querySelector("main").removeChild(searchResultsContainer);
