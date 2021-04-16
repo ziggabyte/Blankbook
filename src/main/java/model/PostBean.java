@@ -5,19 +5,16 @@ public class PostBean {
 	private String tagName;
 	private String tagId;
 	private String postId;
-	private boolean isInDatabase;
 	
-	public PostBean(String text, String tagName) {
+	public PostBean(String text, String tagName) { //används för att skapa PostBeans för nya poster
 		this.text = text;
 		this.tagName = tagName;
-		this.isInDatabase = false;
 	}
 	
-	public PostBean(String text, String tagName, String postId) {
+	public PostBean(String text, String tagName, String postId) { //används för att skapa PostBeans vid sökning
 		this.text = text;
 		this.tagName = tagName;
 		this.postId = postId;
-		this.isInDatabase = false;
 	}
 	
 	public String getText() {
@@ -39,14 +36,6 @@ public class PostBean {
 
 	public void setTagId(String tagId) {
 		this.tagId = tagId;
-	}
-
-	public boolean isInDatabase() {
-		return isInDatabase;
-	}
-
-	public void setIsInDatabase(boolean isInDatabase) {
-		this.isInDatabase = isInDatabase;
 	}
 
 	public String getPostId() {

@@ -13,94 +13,59 @@ public class DatabaseConnector {
 	private static PreparedStatement stmt = null;
 	private static ResultSet resultSet = null;
 	
-	public static boolean openConnection(String databaseName) {
+	public static boolean makeLoginQuery(UserBean userBean) { //Kollar ifall det finns en användare i db som stämmer med det som skrivits in
+		boolean isInDatabase = false;
 		try {
-			Class.forName("com.mysql.cj.jdbc.Driver");
-		} catch (Exception e) {
-			System.out.println("Driver: ");
-			e.printStackTrace();
+			String requestQuery = "SELECT name FROM user "
+					+ "WHERE email = ? AND password = ? ";
+			
+			stmt = conn.prepareStatement(requestQuery);
+			stmt.setString(1, userBean.getEmail());
+			stmt.setString(2, userBean.getPassword());
+			
+			resultSet = stmt.executeQuery();
+			while(resultSet.next()) {
+				userBean.setName(resultSet.getString(1));
+				isInDatabase = true;
+			}
+			closeConnection();			
+		} catch (SQLException e) {
+			handleSqlError(e);
 		}
+		return isInDatabase;
+	}
+	
+	public static ArrayList<PostBean> makeQueryForAllPosts(){ //Hämtar alla poster från databasen för att lägga i feeden
+		ArrayList<PostBean> postBeanList = new ArrayList<>();
 		
 		try {
-			conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/" 
-		+ databaseName 
-		+ "?serverTimezone=UTC", 
-		DatabaseLogin.getUsername(), 
-		DatabaseLogin.getPassword());
-			return true;
-			
-		} catch (SQLException e) {
-			handleSqlError(e);
-			return false;		}
-	}
-	
-	private static void checkIfTagExists(PostBean postBean) {		
-		try {
-			String requestQuery = "SELECT COUNT(Tag_ID) FROM tag WHERE tagname = ?";
+			String requestQuery = 
+					"SELECT post.text, tag.tagname FROM post INNER JOIN tag ON post.Tag_ID = tag.Tag_ID ORDER BY post.Post_ID DESC";
 			stmt = conn.prepareStatement(requestQuery);
-			stmt.setString(1, postBean.getTagName());
-			
-			stmt.executeQuery();
 			resultSet = stmt.executeQuery();
 			
-			if (resultSet.next()) {
-				if (resultSet.getInt(1) == 1) {
-					postBean.setIsInDatabase(true);
-				}
-			}
-
-			closeConnection();
-		} catch (SQLException e) {
-			System.out.println("Från catch i check if tag exists");
-			handleSqlError(e);
-		}
-	}
-	
-	private static void getTagIdFromDatabase(PostBean postBean) {
-		try {
-			//HÄMTAR ID FRÅN DEN TAG SOM FINNS I POSTBEAN
-			String requestQuery =  "SELECT DISTINCT `Tag_ID` FROM `tag` WHERE `Tagname` = ?";
-			stmt = conn.prepareStatement(requestQuery);
-			stmt.setString(1, postBean.getTagName());
-			resultSet = stmt.executeQuery();
-			while (resultSet.next()) {
-				postBean.setTagId(String.valueOf(resultSet.getInt(1))); 
+			while(resultSet.next()) {
+				postBeanList.add(new PostBean(resultSet.getString(1), resultSet.getString(2)));
 			}
 			closeConnection();
 		} catch (SQLException e) {
-			System.out.println("Från catch i add tag to database");
 			handleSqlError(e);
 		}
-	}
-	
-	private static void addTagToDatabase(PostBean postBean) {
-		try {
-			// LÄGG TILL EN RAD I TAG MED DET TAGNAME SOM FINNS I POSTBEAN
-			String requestQuery = "INSERT INTO `tag` (`Tagname`) VALUES (?)";
-			stmt = conn.prepareStatement(requestQuery);
-			stmt.setString(1, postBean.getTagName());
-			stmt.executeUpdate();
-			
-			closeConnection();
-		} catch (SQLException e) {
-			System.out.println("Från catch i add tag to database");
-			handleSqlError(e);
-		}
-	}
-	
-	public static void addPostToDatabase(PostBean postBean) {
-		checkIfTagExists(postBean); 
 		
+		return postBeanList;
+	}
+	
+	public static void addPostToDatabase(PostBean postBean) { // Lägger till en post i databasen
 		if(openConnection("posts")) {
-			if (!postBean.isInDatabase()) {
+			if (!isTagInDatabase(postBean)) { //Kollar först ifall postens tagg finns i databasen
 				if (openConnection("posts")) {
-					addTagToDatabase(postBean);
+					addTagToDatabase(postBean); //Om inte: lägger till taggen i databasen
 				} 
 			}
 		} 
 		
 		if (openConnection("posts")) {
-			getTagIdFromDatabase(postBean);
+			getTagIdFromDatabase(postBean); //Hämtar taggens id (för att kunna använda som referensnyckel i postens rad i databasen)
 		}
 		
 		if (openConnection("posts")) {
@@ -121,96 +86,75 @@ public class DatabaseConnector {
 		
 	}
 	
-	public static ArrayList<PostBean> makePostQuery(){
-		ArrayList<PostBean> postBeanList = new ArrayList<>();
-		
+	private static boolean isTagInDatabase(PostBean postBean) {
+		boolean isInDatabase = false;
 		try {
-			String requestQuery = 
-					"SELECT post.text, tag.tagname FROM post INNER JOIN tag ON post.Tag_ID = tag.Tag_ID ORDER BY post.Post_ID DESC";
+			String requestQuery = "SELECT COUNT(Tag_ID) FROM tag WHERE tagname = ?";
 			stmt = conn.prepareStatement(requestQuery);
+			stmt.setString(1, postBean.getTagName());
+			
+			stmt.executeQuery();
 			resultSet = stmt.executeQuery();
 			
-			while(resultSet.next()) {
-				postBeanList.add(new PostBean(resultSet.getString(1), resultSet.getString(2)));
+			if (resultSet.next()) {
+				if (resultSet.getInt(1) == 1) {
+					isInDatabase = true;
+				}
 			}
 			closeConnection();
 		} catch (SQLException e) {
+			System.out.println("Från catch i check if tag exists");
 			handleSqlError(e);
 		}
-		
-		return postBeanList;
+		return isInDatabase;
 	}
 	
-	public static boolean makeLoginQuery(UserBean userBean) {
-		boolean result = false;
-		
+	private static void getTagIdFromDatabase(PostBean postBean) {
 		try {
-			String requestQuery = "SELECT name FROM user "
-					+ "WHERE email = ? AND password = ? ";
-			
+			String requestQuery =  "SELECT DISTINCT `Tag_ID` FROM `tag` WHERE `Tagname` = ?";
 			stmt = conn.prepareStatement(requestQuery);
-			stmt.setString(1, userBean.getEmail());
-			stmt.setString(2, userBean.getPassword());
-			
+			stmt.setString(1, postBean.getTagName());
 			resultSet = stmt.executeQuery();
-			while(resultSet.next()) {
-				userBean.setName(resultSet.getString(1));
-				result = true;
+			while (resultSet.next()) {
+				postBean.setTagId(String.valueOf(resultSet.getInt(1))); 
 			}
 			closeConnection();
-			return result;
-			
 		} catch (SQLException e) {
+			System.out.println("Från catch i add tag to database");
 			handleSqlError(e);
 		}
-		return result;
 	}
 	
-	private static void handleSqlError(SQLException e) {
-		System.out.println("SQLException: " + e.getMessage());
-		System.out.println("SQLState: " + e.getSQLState());
-		System.out.println("VendorError: " + e.getErrorCode());
-	}
-	
-	private static void closeConnection() throws SQLException {
-		conn.endRequest();
-		conn.close();
+	private static void addTagToDatabase(PostBean postBean) {
+		try {
+			String requestQuery = "INSERT INTO `tag` (`Tagname`) VALUES (?)";
+			stmt = conn.prepareStatement(requestQuery);
+			stmt.setString(1, postBean.getTagName());
+			stmt.executeUpdate();
+			
+			closeConnection();
+		} catch (SQLException e) {
+			System.out.println("Från catch i add tag to database");
+			handleSqlError(e);
+		}
 	}
 
 	public static ArrayList<PostBean> makeSearchQuery(SearchBean searchBean) {
 		ArrayList<PostBean> searchResults = new ArrayList<>();
 		try {
-			
-			//Finns sökfrasen bland taggar
-			if (openConnection("posts")) {
-				if (isSearchPhraseInTag(searchBean)) {
-					if (openConnection("posts")) {
-						searchResults.addAll(getPostsWithSearchPhraseInTag(searchBean)) ;
-					}
+			if (isSearchPhraseInTag(searchBean)) { //Kollar om sökfrasen finns bland taggar
+				if (openConnection("posts")) {
+					searchResults.addAll(getPostsWithSearchPhraseInTag(searchBean)) ;
 				}
 			}
 			
-			//Finns sökfrasen bland text och kolla så inga dubletter läggs till
-			if (openConnection("posts")) {
+			if (openConnection("posts")) { // Kollar om sökfrasen finns bland text
 				if (isSearchPhraseInPost(searchBean)) {
 					if (openConnection("posts")) {
-						ArrayList<PostBean> checkForDuplicates = getPostsWithSearchPhraseInText(searchBean);
-						if (searchResults.size() > 0) {
-							for (int i = 0; i < searchResults.size(); i ++) {
-								for (int j = 0; j < checkForDuplicates.size(); j++) {
-									if (searchResults.get(i).getPostId().equals(checkForDuplicates.get(j).getPostId())) {
-										checkForDuplicates.remove(j);
-									}
-								}
-							}	
-						}
-						searchResults.addAll(checkForDuplicates);
+						searchResults.addAll(checkForDuplicates(searchResults, searchBean)); //Kollar så inga dubletter läggs i listan
 					}
 				}
 			}
-			
-			
-
 			closeConnection();
 		} catch (SQLException e) {
 			System.out.println("Från catch i Make search query");
@@ -218,6 +162,20 @@ public class DatabaseConnector {
 		}
 		
 		return searchResults;
+	}
+	
+	private static ArrayList<PostBean> checkForDuplicates(ArrayList<PostBean> searchResults, SearchBean searchBean) {
+		ArrayList<PostBean> checkedForDuplicates = getPostsWithSearchPhraseInText(searchBean);
+		if (searchResults.size() > 0) {
+			for (int i = 0; i < searchResults.size(); i ++) {
+				for (int j = 0; j < checkedForDuplicates.size(); j++) {
+					if (searchResults.get(i).getPostId().equals(checkedForDuplicates.get(j).getPostId())) {
+						checkedForDuplicates.remove(j);
+					}
+				}
+			}	
+		}
+		return checkedForDuplicates;
 	}
 	
 	private static ArrayList<PostBean> getPostsWithSearchPhraseInTag(SearchBean searchBean){
@@ -307,4 +265,38 @@ public class DatabaseConnector {
 			}
 		return isInDatabase;
 	}
+	
+	public static boolean openConnection(String databaseName) { //öppna en tråd till angiven databas
+		try {
+			Class.forName("com.mysql.cj.jdbc.Driver");
+		} catch (Exception e) {
+			System.out.println("Driver: ");
+			e.printStackTrace();
+		}
+		
+		try {
+			conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/" 
+		+ databaseName 
+		+ "?serverTimezone=UTC", 
+		DatabaseLogin.getUsername(), 
+		DatabaseLogin.getPassword());
+			return true;
+			
+		} catch (SQLException e) {
+			System.out.println("Från open connection");
+			handleSqlError(e);
+			return false;		}
+	}
+	
+	private static void handleSqlError(SQLException e) { //Hjälpmetod för att slippa upprepa denna kodbit
+		System.out.println("SQLException: " + e.getMessage());
+		System.out.println("SQLState: " + e.getSQLState());
+		System.out.println("VendorError: " + e.getErrorCode());
+	}
+	
+	private static void closeConnection() throws SQLException { //Hjälpmetod för att slippa upprepa denna kodbit
+		conn.endRequest();
+		conn.close();
+	}
+
 }
