@@ -70,7 +70,7 @@ public class DatabaseConnector {
 		
 		if (openConnection("posts")) {
 			try {
-				String requestQuery = "INSERT INTO `post` (`Text`, `Tag_ID`) VALUES (?, ?)";
+				String requestQuery = "INSERT INTO `post` (`Text`, `Tag_ID`) VALUES (?, ?)"; //Lägger till posten i databasen
 				stmt = conn.prepareStatement(requestQuery);
 				stmt.setString(1, postBean.getText());
 				stmt.setString(2, postBean.getTagId());
@@ -86,7 +86,7 @@ public class DatabaseConnector {
 		
 	}
 	
-	private static boolean isTagInDatabase(PostBean postBean) {
+	private static boolean isTagInDatabase(PostBean postBean) { // Hjälpmetod till addPostToDatabase, kollar om en tagg finns i db
 		boolean isInDatabase = false;
 		try {
 			String requestQuery = "SELECT COUNT(Tag_ID) FROM tag WHERE tagname = ?";
@@ -109,7 +109,7 @@ public class DatabaseConnector {
 		return isInDatabase;
 	}
 	
-	private static void getTagIdFromDatabase(PostBean postBean) {
+	private static void getTagIdFromDatabase(PostBean postBean) { //Hjälpmetod till addPostToDatabase, hämtar ett Tag_ID från databasen och lägger till i en PostBean
 		try {
 			String requestQuery =  "SELECT DISTINCT `Tag_ID` FROM `tag` WHERE `Tagname` = ?";
 			stmt = conn.prepareStatement(requestQuery);
@@ -125,7 +125,7 @@ public class DatabaseConnector {
 		}
 	}
 	
-	private static void addTagToDatabase(PostBean postBean) {
+	private static void addTagToDatabase(PostBean postBean) { // Hjälpmetod till addPostToDatabase, lägger till en tagg i databasen
 		try {
 			String requestQuery = "INSERT INTO `tag` (`Tagname`) VALUES (?)";
 			stmt = conn.prepareStatement(requestQuery);
@@ -139,7 +139,7 @@ public class DatabaseConnector {
 		}
 	}
 
-	public static ArrayList<PostBean> makeSearchQuery(SearchBean searchBean) {
+	public static ArrayList<PostBean> makeSearchQuery(SearchBean searchBean) { //Gör en sökning i databasen
 		ArrayList<PostBean> searchResults = new ArrayList<>();
 		try {
 			if (isSearchPhraseInTag(searchBean)) { //Kollar om sökfrasen finns bland taggar
@@ -149,7 +149,7 @@ public class DatabaseConnector {
 			}
 			
 			if (openConnection("posts")) { // Kollar om sökfrasen finns bland text
-				if (isSearchPhraseInPost(searchBean)) {
+				if (isSearchPhraseInText(searchBean)) {
 					if (openConnection("posts")) {
 						searchResults.addAll(checkForDuplicates(searchResults, searchBean)); //Kollar så inga dubletter läggs i listan
 					}
@@ -164,7 +164,7 @@ public class DatabaseConnector {
 		return searchResults;
 	}
 	
-	private static ArrayList<PostBean> checkForDuplicates(ArrayList<PostBean> searchResults, SearchBean searchBean) {
+	private static ArrayList<PostBean> checkForDuplicates(ArrayList<PostBean> searchResults, SearchBean searchBean) { //Hjälpmetod till makeSearchQuery, kollar efter dubletter i en arrayList
 		ArrayList<PostBean> checkedForDuplicates = getPostsWithSearchPhraseInText(searchBean);
 		if (searchResults.size() > 0) {
 			for (int i = 0; i < searchResults.size(); i ++) {
@@ -178,7 +178,7 @@ public class DatabaseConnector {
 		return checkedForDuplicates;
 	}
 	
-	private static ArrayList<PostBean> getPostsWithSearchPhraseInTag(SearchBean searchBean){
+	private static ArrayList<PostBean> getPostsWithSearchPhraseInTag(SearchBean searchBean){ //Hjälpmetod till makeSearchQuerty, skapar en lista av PostBeans vars tagg matchar en sökning
 		ArrayList<PostBean> searchResults = new ArrayList<>();
 		try {
 			String requestQuery = 
@@ -200,7 +200,7 @@ public class DatabaseConnector {
 		return searchResults;
 	}
 	
-	private static ArrayList<PostBean> getPostsWithSearchPhraseInText(SearchBean searchBean){
+	private static ArrayList<PostBean> getPostsWithSearchPhraseInText(SearchBean searchBean){ //Hjälpmetod till makeSearchQuery, skapar en lista av PostBeans vars text matchar en sökning
 		ArrayList<PostBean> searchResults = new ArrayList<>();
 		try {
 			String requestQuery = 
@@ -222,7 +222,7 @@ public class DatabaseConnector {
 		return searchResults;
 	}
 	
-	private static boolean isSearchPhraseInPost(SearchBean searchBean) {
+	private static boolean isSearchPhraseInText(SearchBean searchBean) { //Hjälpmetod till makeSearchQuery, kollar ifall en sökning finns i någon posts text
 		boolean isInDatabase = false;
 		try {
 			String requestQuery = 
@@ -244,7 +244,7 @@ public class DatabaseConnector {
 		return isInDatabase;
 	}
 	
-	private static boolean isSearchPhraseInTag(SearchBean searchBean) {
+	private static boolean isSearchPhraseInTag(SearchBean searchBean) { //Hjälpmetod till makeSearchQuery, kollar ifall en sökning finns i någon tagg
 		boolean isInDatabase = false;
 		try {
 			String requestQuery = 
@@ -288,13 +288,13 @@ public class DatabaseConnector {
 			return false;		}
 	}
 	
-	private static void handleSqlError(SQLException e) { //Hjälpmetod för att slippa upprepa denna kodbit
+	private static void handleSqlError(SQLException e) { //Hjälpmetod för att slippa upprepa denna kodbit i catch
 		System.out.println("SQLException: " + e.getMessage());
 		System.out.println("SQLState: " + e.getSQLState());
 		System.out.println("VendorError: " + e.getErrorCode());
 	}
 	
-	private static void closeConnection() throws SQLException { //Hjälpmetod för att slippa upprepa denna kodbit
+	private static void closeConnection() throws SQLException { //Hjälpmetod för att slippa upprepa denna kodbit vid stängning
 		conn.endRequest();
 		conn.close();
 	}

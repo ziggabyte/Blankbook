@@ -1,17 +1,16 @@
 <div class="feedContainer">
-<h1>Feed</h1>
 
 <%
 ArrayList<PostBean> postBeanList = null;
 
 if (DatabaseConnector.openConnection("posts")) {
-	postBeanList = DatabaseConnector.makePostQuery();
+	postBeanList = DatabaseConnector.makeQueryForAllPosts();
 }
 
 if (postBeanList != null){
 	for (PostBean pb : postBeanList) {
 		out.print(
-	"<div class='card' style='width: 18rem;'>" 
+	"<div class='my-card'>" 
 	+ "<div class='card-body'>" 
 	+ "<p class='card-text'>" 
 	+ pb.getText() 

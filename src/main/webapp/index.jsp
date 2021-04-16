@@ -10,7 +10,6 @@
     
 <main class="form-signin">
   <form action="<%=request.getContextPath()%>/LoginController" method="post">
-    <img class="mb-4" src="" alt="Blankbook logo" width="72" height="57">
     <h1 class="h3 mb-3 fw-normal">Blankbook</h1>
     
     <%

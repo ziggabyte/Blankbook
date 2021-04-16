@@ -1,5 +1,12 @@
 @charset "UTF-8";
 
-main {
-	background-color: red;
+:root {
+  --body-background-color: black;
+  --header-background-color: #1d1b33;
+  --footer-background-color: #1d1b33;
+  --post-background-color: #4c4d4d;
+  --button-background-color: #da6d34;
+  --general-font-color: #e6c48d;
+  --button-font-color: ;
+  --font: "Fredoka One";
 }

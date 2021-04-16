@@ -48,12 +48,23 @@ if (document.getElementById("toggle")) {
 
 // Script för att stänga sökresultaten manuellt
 if (document.getElementById("searchResultsContainer")) {
+  console.log("i början av metoden");
   const searchResultsContainer = document.getElementById(
     "searchResultsContainer"
   );
-  searchResultsContainer.textContent = "";
+
   const closeButton = document.getElementById("closeSearchResultsButton");
   closeButton.addEventListener("click", () => {
     document.querySelector("main").removeChild(searchResultsContainer);
   });
+}
+
+//script för att tömma rutan med sökresultat när man gör en sökning
+if (document.getElementById("searchButton")) {
+  document
+    .getElementById("searchButton")
+    .addEventListener(
+      "click",
+      () => (document.getElementById("searchButton").textContent = "")
+    );
 }

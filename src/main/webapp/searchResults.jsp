@@ -5,12 +5,11 @@
 <%
 ArrayList<PostBean> postBeanList = (ArrayList<PostBean>) request.getAttribute("searchResults");
 out.print("<div class='searchResultsContainer' id='searchResultsContainer'>");
-out.print("<button type='button' id='closeSearchResultsButton'>Close</button>");
  if (postBeanList.size() > 0) {	 
 	 out.print("<h1>Search results</h1>");
 
 	 for (PostBean pb : postBeanList) {
-		 out.print("<div class='card' style='width: 18rem;'>" 
+		 out.print("<div class='my-card'>" 
 					+ "<div class='card-body'>" 
 					+ "<p class='card-text'>" 
 					+ pb.getText() 
@@ -28,6 +27,7 @@ out.print("<button type='button' id='closeSearchResultsButton'>Close</button>");
  } else {
 	 out.print("<h2>No search results found</h2>");
  }
+ out.print("<button type='button' id='closeSearchResultsButton'>Close</button>");
  out.print("</div>");
  
 %>
