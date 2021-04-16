@@ -55,11 +55,11 @@ public class DatabaseConnector {
 		return postBeanList;
 	}
 	
-	public static void addPostToDatabase(PostBean postBean) { // Lägger till en post i databasen
+	public static void addPostToDatabase(PostBean postBean) { 	// Lägger till en post i databasen
 		if(openConnection("posts")) {
-			if (!isTagInDatabase(postBean)) { //Kollar först ifall postens tagg finns i databasen
+			if (!isTagInDatabase(postBean)) { 		//Kollar först ifall postens tagg finns i databasen
 				if (openConnection("posts")) {
-					addTagToDatabase(postBean); //Om inte: lägger till taggen i databasen
+					addTagToDatabase(postBean); 	//Om inte: lägger till taggen i databasen
 				} 
 			}
 		} 
@@ -142,13 +142,13 @@ public class DatabaseConnector {
 	public static ArrayList<PostBean> makeSearchQuery(SearchBean searchBean) { //Gör en sökning i databasen
 		ArrayList<PostBean> searchResults = new ArrayList<>();
 		try {
-			if (isSearchPhraseInTag(searchBean)) { //Kollar om sökfrasen finns bland taggar
+			if (isSearchPhraseInTag(searchBean)) { 	//Kollar om sökfrasen finns bland taggar
 				if (openConnection("posts")) {
 					searchResults.addAll(getPostsWithSearchPhraseInTag(searchBean)) ;
 				}
 			}
 			
-			if (openConnection("posts")) { // Kollar om sökfrasen finns bland text
+			if (openConnection("posts")) { 			// Kollar om sökfrasen finns bland text
 				if (isSearchPhraseInText(searchBean)) {
 					if (openConnection("posts")) {
 						searchResults.addAll(checkForDuplicates(searchResults, searchBean)); //Kollar så inga dubletter läggs i listan

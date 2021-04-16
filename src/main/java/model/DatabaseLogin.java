@@ -1,6 +1,6 @@
 package model;
 
-public class DatabaseLogin {
+public class DatabaseLogin { // Här finns inloggningsuppgifter till databasen
 
 	private static String username = "root";
 	private static String password = "";

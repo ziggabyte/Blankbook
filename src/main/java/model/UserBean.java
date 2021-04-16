@@ -1,6 +1,6 @@
 package model;
 
-public class UserBean {
+public class UserBean { //Bean med data som används vid inloggning 
 	private String email;
 	private String password;
 	private String name;

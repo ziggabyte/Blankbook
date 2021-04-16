@@ -1,5 +1,4 @@
-<header>
-  <!-- Fixed navbar -->
+<header> <!-- Här har jag använt mig av en header från Bootstrap -->
   <nav class="navbar navbar-expand-md navbar-dark fixed-top">
     <div class="container-fluid">
       
@@ -21,7 +20,6 @@
         </ul>
         
       <button class="toggle" id="toggle">Dark mode</button>
-        
         
          <form class="d-flex" action="SearchController" method="post">
           <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search" name="search" required>

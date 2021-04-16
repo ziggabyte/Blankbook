@@ -37,20 +37,16 @@ public class PostController extends HttpServlet {
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
 	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		//packa upp variablerna från text och tag 
 		String text = request.getParameter("text");
 		String tag = request.getParameter("tag");
-		PostBean postBean = new PostBean(text, tag);
+		PostBean postBean = new PostBean(text, tag);		//Packar upp värden från requesten och skapar PostBean
 		
-		// skicka in dem till databasen 
-
-		if (DatabaseConnector.openConnection("posts")) {
-			DatabaseConnector.addPostToDatabase(postBean);
+		if (DatabaseConnector.openConnection("posts")) {	//Öppnar connection till databasen
+			DatabaseConnector.addPostToDatabase(postBean);	//Lägger till posten i databasen
 		}
 		
-		// skicka användaren tillbaka till feed.jsp
-		RequestDispatcher rd = request.getRequestDispatcher("feed.jsp");
-		rd.forward(request, response);
+		RequestDispatcher rd = request.getRequestDispatcher("feed.jsp"); 
+		rd.forward(request, response);						// Skickar användaren till feeden
 	}
 
 }

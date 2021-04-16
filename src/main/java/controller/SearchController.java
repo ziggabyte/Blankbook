@@ -41,18 +41,18 @@ public class SearchController extends HttpServlet {
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		SearchBean searchBean = null;
 		
-		if (!request.getParameter("search").isBlank() && !request.getParameter("search").isEmpty()) {			
+		if (!request.getParameter("search").isBlank() && !request.getParameter("search").isEmpty()) {	//Kollar ifall söknfrasen är tom		
 			searchBean = new SearchBean(request.getParameter("search"));	
 		}
 		
-		ArrayList<PostBean> searchResults = getSearchResults(searchBean);
-		request.setAttribute("searchResults", searchResults);
+		ArrayList<PostBean> searchResults = getSearchResults(searchBean);		//Hämtar sökresultat från databasen i en arraylist
+		request.setAttribute("searchResults", searchResults);					//Sättar arraylisten som attribut till requesten
 		
-		RequestDispatcher rd = request.getRequestDispatcher("feed.jsp");
+		RequestDispatcher rd = request.getRequestDispatcher("feed.jsp");		//Skickar tillbaka till feeden
 		rd.forward(request, response);
 	}
 	
-	private ArrayList<PostBean> getSearchResults(SearchBean searchBean) {
+	private ArrayList<PostBean> getSearchResults(SearchBean searchBean) { 		//Hjälpmetod för att öppna databaskoppling och initiera sökning
 		if (DatabaseConnector.openConnection("posts")) {
 			return DatabaseConnector.makeSearchQuery(searchBean);
 		}

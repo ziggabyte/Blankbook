@@ -5,15 +5,13 @@
 <jsp:include page="head.jsp"/>
 
 <body class="text-center">
-
-
     
 <main class="form-signin">
   <form action="<%=request.getContextPath()%>/LoginController" method="post">
-    <h1 class="h3 mb-3 fw-normal">Blankbook</h1>
+    <h1 class="h3 mb-3 fw-normal">blankbook</h1>
     
     <%
-if (request.getParameter("login") != null) {
+if (request.getParameter("login") != null) { // Kollar ifall det finns parameter i url:en, isåfall lägger till felmeddelande
 %>
 <jsp:include page="loginError.jsp"/>
 <%
@@ -28,7 +26,7 @@ if (request.getParameter("login") != null) {
       <label for="floatingPassword">Password</label>
     </div>  
 <%
-if (request.getCookies().length <= 1) {
+if (request.getCookies().length <= 1) { // Kollar ifall det redan finns cookies, om inte så får man cookie-frågan
 %>
 <jsp:include page="cookieQuestion.jsp"/>
 <%

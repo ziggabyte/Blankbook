@@ -2,7 +2,7 @@
 
 //script för toggle dark mode
 
-if (document.getElementById("toggle")) {
+if (document.getElementById("toggle")) { //Kollar ifall togglern finns, så den inte ger felmeddelanden på inloggningssidan där den inte finns
   const darkModeToggler = document.getElementById("toggle");
   const darkStyleLink = document.getElementById("darkStyle");
   const darkStylePath = "css/darkStyles.css";
@@ -16,18 +16,18 @@ if (document.getElementById("toggle")) {
   }
 
   function turnOnDarkTheme() {
-    darkStyleLink.setAttribute("href", darkStylePath);
+    darkStyleLink.setAttribute("href", darkStylePath); //sätter sökvägen till darkmode som attribut för att köra dark mode
     darkModeToggler.textContent = "Light mode";
   }
 
   function turnOffDarkTheme() {
-    darkStyleLink.setAttribute("href", " ");
+    darkStyleLink.setAttribute("href", " "); //tar bort sökvägen till dokumentet med dark mode för att gå tillbaka till light mode
     darkModeToggler.textContent = "Dark mode";
   }
 
-  if (darkModeToggler) {
+  if (darkModeToggler) { 
     darkModeToggler.addEventListener("click", () => {
-      if (darkModeToggler.textContent === "Light mode") {
+      if (darkModeToggler.textContent === "Light mode") { // kollar vilken knapp man har tryckt på och sätter det temat i theme-cookien, ifall en sådan finns
         turnOffDarkTheme();
         if (hasThemeCookie) setThemeCookie("light");
       } else {

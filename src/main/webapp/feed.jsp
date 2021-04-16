@@ -19,9 +19,11 @@ if (session.getAttribute("userBean") == null) {
 <%@include file="header.jsp"%>
 <main>
 <%@ include file="newPost.jsp" %>
-<% if (request.getAttribute("searchResults") != null) {%>
+
+<% if (request.getAttribute("searchResults") != null) {%> <!-- Kollar ifall det finns sökresultat och inkluderar i så fall -->
 <jsp:include page="searchResults.jsp"/>
 <% } %>
+
 <%@include file="feedMain.jsp"%>
 </main>
 <%@include file="footer.jsp"%>

@@ -41,23 +41,26 @@ public class LoginController extends HttpServlet {
 	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		UserBean userBean = new UserBean(request.getParameter("email"), request.getParameter("password") );
-		if (hasCorrectLogin(userBean)) {			
-			setBeanAsAttribute(request, userBean);
-			if (hasAsweredCookieQuestion(request)) {
-				if (isConsentingToCookies(request)) {
-					setConsentCookie(response, "yes");
+		
+		if (hasCorrectLogin(userBean)) {				// kollar inloggningsuppgifter		
+			setBeanAsAttribute(request, userBean);		// sätter UserBean som attribut till requesten
+			if (hasAsweredCookieQuestion(request)) { 	// Kollar ifall cookie-frågan besvarats vid inloggning
+				if (isConsentingToCookies(request)) { 	// Om sagt ja till cookies
+					setConsentCookie(response, "yes"); 	// Spara svaret och sätt cookie för tema
 					setThemeCookie(response);
 				}
 				else {
-					setConsentCookie(response, "no");
+					setConsentCookie(response, "no"); 	// spara svaret
 				}
 			}
-			forwardToFeed(request,response);
+			forwardToFeed(request,response); 			// skicka vidare till feed
 		} else {
-			response.sendRedirect("index.jsp?login=fail");
+			response.sendRedirect("index.jsp?login=fail"); // skicka tillbaka till inlogg med attribut som används för att printa felmeddelande
 		}			
 	}
 	
+	//Här nedan är hjälpmetoder för att öka läsbarheten i koden
+
 	private void forwardToFeed(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
 		RequestDispatcher rd = request.getRequestDispatcher("feed.jsp");
 		rd.forward(request, response);

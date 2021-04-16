@@ -28,7 +28,7 @@ public class LogoutController extends HttpServlet {
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
 	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		if (request.getSession().getAttribute("userBean") != null) {
+		if (request.getSession().getAttribute("userBean") != null) {	//LogoutController enligt mall från övningen vi gjorde
 			
 			HttpSession session = request.getSession();
 			UserBean userBean = (UserBean) request.getSession().getAttribute("userBean");
@@ -36,9 +36,7 @@ public class LogoutController extends HttpServlet {
 			
 			session.removeAttribute("userBean");
 			session.invalidate();
-			
-			//kan göra reset cookie så den städar bort cookie när den loggar ut
-			
+						
 			response.sendRedirect("index.jsp");
 		} else {
 			response.sendRedirect("index.jsp");
